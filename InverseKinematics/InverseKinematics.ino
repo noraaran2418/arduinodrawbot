@@ -23,62 +23,54 @@ http://projectsfromtech.blogspot.com/
 
 #include <Servo.h>
 
-Servo ServoS_1;		 // Joint at base
-Servo ServoS_2;		 // Elbow between a and b
+Servo ServoS_1;      // Joint at base
+Servo ServoS_2;      // Elbow between a and b
 
 // Servo Angles
 float ServoS_1_Angle = 90;
 float ServoS_2_Angle = 90;
 
 // Define arm Constants
-const float a = 3;		// lower joint length (cm)
-const float b = 3;		// upper joint length (cm)
+const float a = 14.5;      // lower joint length (cm)
+const float b = 11.5;      // upper joint length (cm)
 
 // Correction factors to align servo values with their respective axis
-const float S_1_CorrectionFactor = 0;		// Align arm "a" with the horizontal when at 0 degrees
-const float S_2_CorrectionFactor = 0;		// Align arm "b" with arm "a" when at 0 degrees
+const float S_1_CorrectionFactor = -10;     // Align arm "a" with the horizontal when at 0 degrees
+const float S_2_CorrectionFactor = -77;     // Align arm "b" with arm "a" when at 0 degrees
 
 // Correction factor to shift origin out to edge of the mount
-const float X_CorrectionFactor = 0;			// X direction correction factor (cm)
-const float Y_CorrectionFactor = 0;			// Y direction correction factor (cm)
+const float X_CorrectionFactor = 6.5;       // X direction correction factor (cm)
+const float Y_CorrectionFactor = -4;       // Y direction correction factor (cm)
 
 // Angle Variables
-float A;			//Angle oppposite side a (between b and c)
-float B;			//Angle oppposite side b
-float C;			//Angle oppposite side c
-float theta;		//Angle formed between line from origin to (x,y) and the horizontal
+float A;            //Angle oppposite side a (between b and c)
+float B;            //Angle oppposite side b
+float C;            //Angle oppposite side c
+float theta;        //Angle formed between line from origin to (x,y) and the horizontal
 
 // Distance variables
-float x;			// x position (cm)
-float y;			// y position (cm)
-float c;			// Hypotenuse legngth in cm
-const float pi = M_PI;	//Store pi in a less annoying format
+float x;            // x position (cm)
+float y;            // y position (cm)
+float c;            // Hypotenuse legngth in cm
+const float pi = M_PI;  //Store pi in a less annoying format
 
 //===================================================================================
 
 void setup()
 {
-	ServoS_1.attach(9);				// Attach servos
-	ServoS_2.attach(10);
-	Serial.begin(9600);
-	moveTo(0, 0);
+  ServoS_1.attach(9);             // Attach servos
+  ServoS_2.attach(10);
+  Serial.begin(9600);             // -For debugging
 }
 //--------------------------------------------------------------
 
-void moveTo(float x, float y)
-{
-	FixCoordinates(x, y);				// Enter coordinates of point.
-	CalculateServoAngles();			// Calculate necessary angles of servos
-	MoveArm();
-	delay(2000);
-}
 
 void loop()
 {
-	moveTo(3, 3);
-	moveTo(2, 3);
-	moveTo(2, 2);
-	moveTo(3, 2);
+  FixCoordinates(10, 10);           // Enter coordinates of point.
+  CalculateServoAngles();           // Calculate necessary angles of servos
+  MoveArm();                        // Move arm to new position
+  delay(30);
 }
 
 //====================================================================================
@@ -93,18 +85,19 @@ void FixCoordinates(float x_input, float y_input)
 // Calculate necessary servo angles to move arm to desired points
 void CalculateServoAngles()
 {
-	c = sqrt( sq(x) + sq(y) );											// pythagorean theorem
-	B = (acos( (sq(b) - sq(a) - sq(c))/(-2*a*c) )) * (180/pi);			// Law of cosines: Angle opposite upper arm section
-	C = (acos( (sq(c) - sq(b) - sq(a))/(-2*a*b) )) * (180/pi);			// Law of cosines: Angle opposite hypotenuse
-	theta = (asin( y / c )) * (180/pi);									// Solve for theta to correct for lower joint's impact on upper joint's angle
-	ServoS_1_Angle = B + theta + S_1_CorrectionFactor;					// Find necessary angle. Add Correction
-	ServoS_2_Angle = C + S_2_CorrectionFactor;							// Find neceesary angle. Add Correction
+  c = sqrt( sq(x) + sq(y) );                                            // pythagorean theorem
+  B = (acos( (sq(b) - sq(a) - sq(c))/(-2*a*c) )) * (180/pi);            // Law of cosines: Angle opposite upper arm section
+  C = (acos( (sq(c) - sq(b) - sq(a))/(-2*a*b) )) * (180/pi);            // Law of cosines: Angle opposite hypotenuse
+  theta = (asin( y / c )) * (180/pi);                                   // Solve for theta to correct for lower joint's impact on upper joint's angle
+  ServoS_1_Angle = B + theta + S_1_CorrectionFactor;                    // Find necessary angle. Add Correction
+  ServoS_2_Angle = C + S_2_CorrectionFactor;                            // Find neceesary angle. Add Correction
 
 }
 
 // Update the servos
 void MoveArm()
 {
-	ServoS_1.write(ServoS_1_Angle);				 // Move joint to desired position
-	ServoS_2.write(ServoS_2_Angle);				 // Move joint to desired position
+  ServoS_1.write(ServoS_1_Angle);              // Move joint to desired position
+  ServoS_2.write(ServoS_2_Angle);              // Move joint to desired position
 }
+
